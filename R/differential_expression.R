@@ -27,9 +27,9 @@ globalVariables(names = 'avg_logFC', package = 'Seurat', add = TRUE)
 ##'   distribution. Use only for UMI-based datasets
 ##'  \item{"negbinom"} :  Likelihood ratio test assuming an underlying negative
 ##'  binomial distribution. Use only for UMI-based datasets
-##'  \item{"MAST} : GLM-framework that treates cellular detection rate as a
+##'  \item{"MAST"} : GLM-framework that treates cellular detection rate as a
 ##'  covariate (Finak et al, Genome Biology, 2015)
-##'  \item{"DESeq2} : DE based on a model using the negative binomial
+##'  \item{"DESeq2"} : DE based on a model using the negative binomial
 ##'  distribution (Love et al, Genome Biology, 2014)
 ##' }
 #' @param min.pct  only test genes that are detected in a minimum fraction of
@@ -53,8 +53,14 @@ globalVariables(names = 'avg_logFC', package = 'Seurat', add = TRUE)
 #' @param assay.type Type of assay to fetch data for (default is RNA)
 #' @param \dots Additional parameters to pass to specific DE functions
 #' @seealso \code{\link{MASTDETest}}, and \code{\link{DESeq2DETest}} for more information on these methods
-#' @return Matrix containing a ranked list of putative markers, and associated
-#' statistics (p-values, ROC score, etc.)
+#' @return data.frame with a ranked list of putative markers as rows, and associated
+#' statistics as columns (p-values, ROC score, etc., depending on the test used (\code{test.use})). The following columns are always present:
+#' \itemize{
+#'   \item \code{avg_logFC}: log fold-chage of the average expression between the two groups. Positive values indicate that the gene is more highly expressed in the first group.
+#'   \item \code{pct.1}: The percentage of cells where the gene is detected in the first group
+#'   \item \code{pct.2}: The percentage of cells where the gene is detected in the second group
+#'   \item \code{p_val_adj}: Adjusted p-value, based on bonferroni correction using all genes in the dataset.
+#' }
 #' @details p-value adjustment is performed using bonferroni correction based on
 #' the total number of genes in the dataset. Other correction methods are not
 #' recommended, as Seurat pre-filters genes using the arguments above, reducing

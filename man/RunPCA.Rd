@@ -12,17 +12,17 @@ RunPCA(object, ...)
 \method{RunPCA}{default}(object, assay = NULL, npcs = 50,
   rev.pca = FALSE, weight.by.var = TRUE, verbose = TRUE,
   ndims.print = 1:5, nfeatures.print = 30, reduction.key = "PC_",
-  seed.use = 42, approx = TRUE, ...)
+  seed.use = 42, approx = TRUE, slot = NULL, ...)
 
 \method{RunPCA}{Assay}(object, assay = NULL, features = NULL,
   npcs = 50, rev.pca = FALSE, weight.by.var = TRUE, verbose = TRUE,
   ndims.print = 1:5, nfeatures.print = 30, reduction.key = "PC_",
-  seed.use = 42, ...)
+  seed.use = 42, slot = "scale.data", ...)
 
 \method{RunPCA}{Seurat}(object, assay = NULL, features = NULL,
   npcs = 50, rev.pca = FALSE, weight.by.var = TRUE, verbose = TRUE,
   ndims.print = 1:5, nfeatures.print = 30, reduction.name = "pca",
-  reduction.key = "PC_", seed.use = 42, ...)
+  reduction.key = "PC_", seed.use = 42, slot = "scale.data", ...)
 }
 \arguments{
 \item{object}{An object}
@@ -53,6 +53,8 @@ the number for the dimension names. PC by default}
 NULL will not set a seed.}
 
 \item{approx}{Use truncated singular value decomposition to approximate PCA}
+
+\item{slot}{Name of slot of Assay PCA is beeing run on (usually "scale.data")}
 
 \item{features}{Features to compute PCA on}
 

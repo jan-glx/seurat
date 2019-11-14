@@ -777,6 +777,7 @@ RunLSI.Seurat <- function(
 #' @param seed.use Set a random seed. By default, sets the seed to 42. Setting
 #' NULL will not set a seed.
 #' @param approx Use truncated singular value decomposition to approximate PCA
+#' @param slot Name of slot of Assay PCA is beeing run on (usually "scale.data")
 #'
 #' @importFrom irlba irlba
 #' @importFrom stats prcomp
@@ -797,6 +798,7 @@ RunPCA.default <- function(
   reduction.key = "PC_",
   seed.use = 42,
   approx = TRUE,
+  slot = NULL,
   ...
 ) {
   if (!is.null(x = seed.use)) {
@@ -815,10 +817,12 @@ RunPCA.default <- function(
     cell.embeddings <- pca.results$v
   }
   else {
-    total.variance <- sum(RowVar(x = object))
+    feature.means <- Matrix::rowMeans(object)
+    feature.vars <- Matrix::rowMeans(object^2) - feature.means^2
+    total.variance <- sum(feature.vars) * (1/(1-1/ncol(object)))
     if (approx) {
       npcs <- min(npcs, nrow(x = object) - 1)
-      pca.results <- irlba(A = t(x = object), nv = npcs, ...)
+      pca.results <- irlba(A = t(x = object), nv = npcs, scale = sqrt(feature.vars), center = feature.means, ...)
       feature.loadings <- pca.results$v
       sdev <- pca.results$d/sqrt(max(1, ncol(object) - 1))
       if (weight.by.var) {
@@ -827,6 +831,7 @@ RunPCA.default <- function(
         cell.embeddings <- pca.results$u
       }
     } else {
+      if(slot != "scale.data") stop("Not Implemented Error: 'aprox=FALSE' can only be used with 'slot=\"scale.data\"'")
       npcs <- min(npcs, nrow(x = object))
       pca.results <- prcomp(x = t(object), rank. = npcs, ...)
       feature.loadings <- pca.results$rotation
@@ -879,12 +884,14 @@ RunPCA.Assay <- function(
   nfeatures.print = 30,
   reduction.key = "PC_",
   seed.use = 42,
+  slot = "scale.data",
   ...
 ) {
   data.use <- PrepDR(
     object = object,
     features = features,
-    verbose = verbose
+    verbose = verbose,
+    slot = slot
   )
   reduction.data <- RunPCA(
     object = data.use,
@@ -897,6 +904,7 @@ RunPCA.Assay <- function(
     nfeatures.print = nfeatures.print,
     reduction.key = reduction.key,
     seed.use = seed.use,
+    slot = slot,
     ...
 
   )
@@ -922,6 +930,7 @@ RunPCA.Seurat <- function(
   reduction.name = "pca",
   reduction.key = "PC_",
   seed.use = 42,
+  slot = "scale.data",
   ...
 ) {
   assay <- assay %||% DefaultAssay(object = object)
@@ -938,6 +947,7 @@ RunPCA.Seurat <- function(
     nfeatures.print = nfeatures.print,
     reduction.key = reduction.key,
     seed.use = seed.use,
+    slot = slot,
     ...
   )
   object[[reduction.name]] <- reduction.data
@@ -1907,31 +1917,36 @@ L2Norm <- function(vec) {
 # @param object        Assay object
 # @param features  Features to use as input for the dimensional reduction technique.
 #                      Default is variable features
-# @ param verbose   Print messages and warnings
+# @param verbose   Print messages and warnings
+# @param slot   slot to use as input for the dimensional reduction technique
 #
 #
 PrepDR <- function(
   object,
   features = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  slot = "scale.data"
 ) {
   if (length(x = VariableFeatures(object = object)) == 0 && is.null(x = features)) {
     stop("Variable features haven't been set. Run FindVariableFeatures() or provide a vector of feature names.")
   }
-  data.use <- GetAssayData(object = object, slot = "scale.data")
+  data.use <- GetAssayData(object = object, slot = slot)
   if (nrow(x = data.use ) == 0) {
-    stop("Data has not been scaled. Please run ScaleData and retry")
+    switch(slot,
+           "scale.data" = stop("Data has not been scaled. Please run ScaleData and retry"),
+           "data" =  stop("Data has not been normalized. Please run NormalizeData and retry"),
+           stop(paste0("Slot '", slot, "' not found in assay '", object@key, "'.")))
   }
   features <- features %||% VariableFeatures(object = object)
   features.keep <- unique(x = features[features %in% rownames(x = data.use)])
   if (length(x = features.keep) < length(x = features)) {
     features.exclude <- setdiff(x = features, y = features.keep)
     if (verbose) {
-      warning(paste0("The following ", length(x = features.exclude), " features requested have not been scaled (running reduction without them): ", paste0(features.exclude, collapse = ", ")))
+      warning(paste0("The following ", length(x = features.exclude), " features requested have not been found in slot '", slot, "' of assay '", object@key, "' (running reduction without them): ", paste0(features.exclude, collapse = ", ")))
     }
   }
   features <- features.keep
-  features.var <- apply(X = data.use[features, ], MARGIN = 1, FUN = var)
+  features.var <- Matrix::rowMeans(data.use[features, ]^2) - Matrix::rowMeans(data.use[features, ])^2
   features.keep <- features[features.var > 0]
   if (length(x = features.keep) < length(x = features)) {
     features.exclude <- setdiff(x = features, y = features.keep)

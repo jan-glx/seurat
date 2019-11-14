@@ -853,7 +853,8 @@ RunPCA.default <- function(
     assay = assay,
     stdev = sdev,
     key = reduction.key,
-    misc = list(total.variance = total.variance)
+    misc = list(total.variance = total.variance),
+    slot = slot
   )
   if (verbose) {
     msg <- capture.output(print(

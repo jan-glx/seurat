@@ -31,7 +31,9 @@ removed when removing its associated assay}
 \item{\code{jackstraw}}{A \code{\link{JackStrawData-class}} object associated with
 this \code{DimReduc}}
 
-\item{\code{misc}}{Utility slot for storing additional data associated with the
+\item{\code{misc}}{Utility slot for storing additional data associated with the}
+
+\item{\code{slot.used}}{Name of slot of assay used to generate \code{DimReduc} object (e.g. \code{'scale.data'})
 \code{DimReduc} (e.g. the total variance of the PCA)}
 }}
 

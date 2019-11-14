@@ -8,7 +8,7 @@
 CreateDimReducObject(embeddings = new(Class = "matrix"),
   loadings = new(Class = "matrix"), projected = new(Class = "matrix"),
   assay = NULL, stdev = numeric(), key = NULL, global = FALSE,
-  jackstraw = NULL, misc = list())
+  jackstraw = NULL, misc = list(), slot = NULL)
 }
 \arguments{
 \item{embeddings}{A matrix with the cell embeddings}
@@ -30,6 +30,8 @@ specific DimReduc}
 
 \item{misc}{list for the user to store any additional information associated
 with the dimensional reduction}
+
+\item{slot}{Slot of Assay used to calculate this dimensional redcution (e.g. 'scale.data')}
 }
 \description{
 Create a DimReduc object
@@ -42,7 +44,8 @@ pca.dr <- CreateDimReducObject(
   loadings = pcs$x,
   stdev = pcs$sdev,
   key = "PC",
-  assay = "RNA"
+  assay = "RNA",
+  slot = "scale.data"
 )
 
 }

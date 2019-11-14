@@ -114,7 +114,8 @@ test_that("CreateDimReducObject works", {
     embeddings = Embeddings(object = pca),
     loadings = Loadings(object = pca),
     projected = Loadings(object = pca, projected = TRUE),
-    assay = "RNA"
+    assay = "RNA",
+    slot = "scale.data"
   )
   expect_equal(Embeddings(object = pca.dr), Embeddings(object = pca))
   expect_equal(Loadings(object = pca.dr), Loadings(object = pca))

@@ -127,6 +127,7 @@ JackStrawData <- setClass(
 #' @slot jackstraw A \code{\link{JackStrawData-class}} object associated with
 #' this \code{DimReduc}
 #' @slot misc Utility slot for storing additional data associated with the
+#' @slot slot.used Name of slot of assay used to generate \code{DimReduc} object (e.g. \code{'scale.data'})
 #' \code{DimReduc} (e.g. the total variance of the PCA)
 #'
 #' @name DimReduc-class
@@ -144,7 +145,8 @@ DimReduc <- setClass(
     stdev = 'numeric',
     key = 'character',
     jackstraw = 'JackStrawData',
-    misc = 'list'
+    misc = 'list',
+    slot.used = 'character'
   )
 )
 
@@ -558,6 +560,7 @@ CreateAssayObject <- function(
 #' @param jackstraw Results from the JackStraw function
 #' @param misc list for the user to store any additional information associated
 #' with the dimensional reduction
+#' @param slot Slot of Assay used to calculate this dimensional redcution (e.g. 'scale.data')
 #'
 #' @aliases SetDimReduction
 #'
@@ -571,7 +574,8 @@ CreateAssayObject <- function(
 #'   loadings = pcs$x,
 #'   stdev = pcs$sdev,
 #'   key = "PC",
-#'   assay = "RNA"
+#'   assay = "RNA",
+#'   slot = "scale.data"
 #' )
 #'
 CreateDimReducObject <- function(
@@ -583,15 +587,25 @@ CreateDimReducObject <- function(
   key = NULL,
   global = FALSE,
   jackstraw = NULL,
-  misc = list()
+  misc = list(),
+  slot = NULL
 ) {
   if (is.null(x = assay)) {
     warning(
-      "No assay specified, setting assay as RNA by default.",
+      "No assay specified, setting assay as 'RNA' by default.",
       call. = FALSE,
       immediate. = TRUE
     )
     assay <- "RNA"
+  }
+
+  if (is.null(x = slot)) {
+    warning(
+      "No slot specified, setting slot as 'scale.data' by default.",
+      call. = FALSE,
+      immediate. = TRUE
+    )
+    slot <- "scale.data"
   }
   # Try to infer key from column names
   if (is.null(x = key) && is.null(x = colnames(x = embeddings))) {
@@ -664,7 +678,8 @@ CreateDimReducObject <- function(
     stdev = stdev,
     key = key,
     jackstraw = jackstraw,
-    misc = misc
+    misc = misc,
+    slot.used = slot
   )
   return(dim.reduc)
 }
